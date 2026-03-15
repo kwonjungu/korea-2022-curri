@@ -528,10 +528,9 @@ const schoolSelect = document.getElementById('schoolLevel');
 const gradeSelect = document.getElementById('gradeGroup');
 const subjectSelect = document.getElementById('subject');
 const resultSection = document.getElementById('resultSection');
-const tableBody = document.getElementById('tableBody');
-const downloadBtn = document.getElementById('downloadBtn');
+const tableBody = document.getElementById('resultBody');
 const resultTitle = document.getElementById('resultTitle');
-const standardCount = document.getElementById('standardCount');
+const standardCount = document.getElementById('resultCount');
 
 const SCHOOL_LABELS = {elementary:'초등학교',middle:'중학교'};
 const GRADE_LABELS = {"1-2":"1~2학년군","3-4":"3~4학년군","5-6":"5~6학년군","1-3":"1~3학년군"};
@@ -546,20 +545,28 @@ function populateSchool(){
 function populateGrade(){
   gradeSelect.innerHTML='<option value="">학년군 선택</option>';
   subjectSelect.innerHTML='<option value="">과목 선택</option>';
+  subjectSelect.disabled=true;
   resultSection.classList.add('hidden');
-  const s=schoolSelect.value;if(!s)return;
+  const s=schoolSelect.value;if(!s){gradeSelect.disabled=true;return;}
+  gradeSelect.disabled=false;
   const gs=CURRICULUM_DATA[s].gradeGroups;
   Object.keys(gs).forEach(k=>{
-    const o=document.createElement('option');o.value=k;o.textContent=GRADE_LABELS[k];gradeSelect.appendChild(o);
+    const o=document.createElement('option');o.value=k;o.textContent=GRADE_LABELS[k]||k;gradeSelect.appendChild(o);
   });
 }
 
+function getSubjects(s,g){
+  const gg=CURRICULUM_DATA[s].gradeGroups[g];
+  return gg.subjects||gg;
+}
 function populateSubject(){
   subjectSelect.innerHTML='<option value="">과목 선택</option>';
   resultSection.classList.add('hidden');
-  const s=schoolSelect.value,g=gradeSelect.value;if(!s||!g)return;
-  const subs=CURRICULUM_DATA[s].gradeGroups[g];
+  const s=schoolSelect.value,g=gradeSelect.value;if(!s||!g){subjectSelect.disabled=true;return;}
+  subjectSelect.disabled=false;
+  const subs=getSubjects(s,g);
   Object.keys(subs).forEach(k=>{
+    if(k==='name')return;
     const o=document.createElement('option');o.value=k;o.textContent=subs[k].name;subjectSelect.appendChild(o);
   });
 }
@@ -568,14 +575,14 @@ function showStandards(){
   resultSection.classList.add('hidden');
   const s=schoolSelect.value,g=gradeSelect.value,sub=subjectSelect.value;
   if(!s||!g||!sub)return;
-  const data=CURRICULUM_DATA[s].gradeGroups[g][sub];
-  resultTitle.textContent=`${SCHOOL_LABELS[s]} ${GRADE_LABELS[g]} ${data.name} 성취기준`;
+  const data=getSubjects(s,g)[sub];
+  resultTitle.textContent=`${SCHOOL_LABELS[s]} ${GRADE_LABELS[g]||g} ${data.name} 성취기준`;
   standardCount.textContent=`총 ${data.standards.length}개`;
   tableBody.innerHTML='';
   data.standards.forEach((st,i)=>{
     const tr=document.createElement('tr');
     tr.className=i%2===0?'bg-white':'bg-gray-50';
-    tr.innerHTML=`<td class="px-4 py-3 text-sm font-mono text-blue-700 whitespace-nowrap">${st.code}</td><td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">${st.area}</td><td class="px-4 py-3 text-sm text-gray-800">${st.desc}</td>`;
+    tr.innerHTML=`<td class="px-4 py-3 text-sm text-gray-500 text-center">${i+1}</td><td class="px-4 py-3 text-sm font-mono text-blue-700 whitespace-nowrap">${st.code}</td><td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">${st.area}</td><td class="px-4 py-3 text-sm text-gray-800">${st.desc}</td>`;
     tableBody.appendChild(tr);
   });
   resultSection.classList.remove('hidden');
@@ -584,7 +591,7 @@ function showStandards(){
 function downloadExcel(){
   const s=schoolSelect.value,g=gradeSelect.value,sub=subjectSelect.value;
   if(!s||!g||!sub)return;
-  const data=CURRICULUM_DATA[s].gradeGroups[g][sub];
+  const data=getSubjects(s,g)[sub];
   const rows=[['성취기준 코드','영역','성취기준']];
   data.standards.forEach(st=>{rows.push([st.code,st.area,st.desc]);});
   const ws=XLSX.utils.aoa_to_sheet(rows);
@@ -598,7 +605,6 @@ function downloadExcel(){
 schoolSelect.addEventListener('change',()=>{populateGrade();});
 gradeSelect.addEventListener('change',()=>{populateSubject();});
 subjectSelect.addEventListener('change',()=>{showStandards();});
-downloadBtn.addEventListener('click',()=>{downloadExcel();});
 
 populateSchool();
 </script>
