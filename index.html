@@ -28,8 +28,17 @@ body{font-family:'Noto Sans KR',sans-serif}
 <option value="">학교급 선택</option><option value="elementary">초등학교</option><option value="middle">중학교</option></select></div>
 <div><label class="block text-sm font-medium text-gray-700 mb-2">학년군</label>
 <select id="gradeGroup" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" disabled><option value="">학년군 선택</option></select></div>
-<div><label class="block text-sm font-medium text-gray-700 mb-2">과목</label>
-<select id="subject" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" disabled><option value="">과목 선택</option></select></div>
+<div class="relative" id="subjectContainer"><label class="block text-sm font-medium text-gray-700 mb-2">과목</label>
+<button type="button" id="subjectBtn" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-left flex justify-between items-center bg-white outline-none focus:ring-2 focus:ring-blue-500" onclick="toggleSubjects()" disabled>
+<span id="subjectBtnText" class="text-gray-400">과목 선택</span>
+<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+</button>
+<div id="subjectPanel" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-64 overflow-y-auto">
+<label class="flex items-center px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 font-medium text-sm">
+<input type="checkbox" id="checkAll" onchange="toggleAllSubjects(this)" class="w-4 h-4 text-blue-600 rounded">
+<span class="ml-2">전체 선택</span></label>
+<div id="subjectChecks"></div>
+</div></div>
 </div></div>
 <div id="resultSection" class="hidden fade-in">
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
@@ -39,9 +48,10 @@ body{font-family:'Noto Sans KR',sans-serif}
 엑셀 다운로드</button></div>
 <div class="bg-white rounded-xl shadow-md overflow-hidden"><div class="overflow-x-auto">
 <table class="w-full text-sm"><thead class="bg-blue-50"><tr>
-<th class="px-4 py-3 text-left font-semibold text-blue-800 w-16">번호</th>
-<th class="px-4 py-3 text-left font-semibold text-blue-800 w-36">성취기준 코드</th>
-<th class="px-4 py-3 text-left font-semibold text-blue-800 w-32">영역</th>
+<th class="px-4 py-3 text-left font-semibold text-blue-800 w-12">번호</th>
+<th class="px-4 py-3 text-left font-semibold text-blue-800 w-32">성취기준 코드</th>
+<th class="px-4 py-3 text-left font-semibold text-blue-800 w-24">과목</th>
+<th class="px-4 py-3 text-left font-semibold text-blue-800 w-28">영역</th>
 <th class="px-4 py-3 text-left font-semibold text-blue-800">성취기준</th>
 </tr></thead><tbody id="resultBody"></tbody></table></div></div>
 <p id="resultCount" class="mt-3 text-sm text-gray-500"></p></div>
@@ -106,6 +116,60 @@ math:{name:"수학",standards:[
 {code:"[2수04-01]",area:"자료와 가능성",desc:"여러 가지 사물을 정해진 기준 또는 자신이 정한 기준으로 분류하여 개수를 세어 보고, 기준에 따른 결과를 말할 수 있다."},
 {code:"[2수04-02]",area:"자료와 가능성",desc:"자료를 분류하여 표로 나타내고, 자료를 표로 나타내면 편리한 점을 말할 수 있다."},
 {code:"[2수04-03]",area:"자료와 가능성",desc:"자료를 분류하여 ○, ×, / 등을 이용한 그래프로 나타내고, 자료를 그래프로 나타내면 편리한 점을 말할 수 있다."}
+]},
+properLife:{name:"바른 생활",standards:[
+{code:"[2바01-01]",area:"나",desc:"나의 몸을 소중히 여기고 건강하고 안전한 생활 습관을 기른다."},
+{code:"[2바01-02]",area:"나",desc:"스스로 할 수 있는 일을 찾아 실천하며 자신의 감정을 바르게 표현한다."},
+{code:"[2바01-03]",area:"나",desc:"좋은 습관을 기르고 때와 장소에 맞는 바른 행동을 한다."},
+{code:"[2바01-04]",area:"나",desc:"규칙적인 생활을 하고 시간과 물건을 아껴 쓴다."},
+{code:"[2바02-01]",area:"마을",desc:"가족을 소중히 여기고 예절 바르게 생활한다."},
+{code:"[2바02-02]",area:"마을",desc:"이웃과 서로 돕고 나누며 더불어 생활한다."},
+{code:"[2바02-03]",area:"마을",desc:"마을에서 안전하게 생활하는 방법을 알고 실천한다."},
+{code:"[2바02-04]",area:"마을",desc:"공공장소에서 질서를 지키고 상대방을 배려하며 생활한다."},
+{code:"[2바03-01]",area:"나라",desc:"나라를 상징하는 것에 관심을 가지고 소중히 여긴다."},
+{code:"[2바03-02]",area:"나라",desc:"다른 나라의 문화에 관심을 가지고 존중하는 마음을 기른다."},
+{code:"[2바03-03]",area:"나라",desc:"세계 여러 나라 사람들과 함께 살아가는 방법을 알고 실천한다."},
+{code:"[2바03-04]",area:"나라",desc:"다양한 문화를 존중하며 세계 시민으로서의 태도를 기른다."},
+{code:"[2바04-01]",area:"자연",desc:"자연을 아끼고 사랑하는 마음을 기른다."},
+{code:"[2바04-02]",area:"자연",desc:"계절에 따라 건강하고 안전하게 생활한다."},
+{code:"[2바04-03]",area:"자연",desc:"환경을 보전하기 위해 할 수 있는 일을 찾아 실천한다."},
+{code:"[2바04-04]",area:"자연",desc:"생명을 소중히 여기고 자연과 더불어 살아가는 태도를 기른다."}
+]},
+wiseLife:{name:"슬기로운 생활",standards:[
+{code:"[2슬01-01]",area:"나",desc:"나의 몸에 관심을 가지고 감각을 활용하여 주변을 탐색한다."},
+{code:"[2슬01-02]",area:"나",desc:"나의 하루 생활을 조사하고 규칙적인 생활 계획을 세운다."},
+{code:"[2슬01-03]",area:"나",desc:"나와 가족의 특성을 탐구하고 서로의 다름을 이해한다."},
+{code:"[2슬01-04]",area:"나",desc:"나의 성장 과정을 조사하여 발표한다."},
+{code:"[2슬02-01]",area:"마을",desc:"마을의 모습과 특성을 탐구한다."},
+{code:"[2슬02-02]",area:"마을",desc:"마을 사람들이 하는 일을 조사하고 관심을 가진다."},
+{code:"[2슬02-03]",area:"마을",desc:"마을에서 볼 수 있는 다양한 직업과 일의 종류를 조사한다."},
+{code:"[2슬02-04]",area:"마을",desc:"마을의 공공기관과 시설을 조사하고 이용 방법을 익힌다."},
+{code:"[2슬03-01]",area:"나라",desc:"우리나라를 상징하는 것을 조사하고 소개한다."},
+{code:"[2슬03-02]",area:"나라",desc:"다른 나라의 자연과 문화를 탐구하고 비교한다."},
+{code:"[2슬03-03]",area:"나라",desc:"세계 여러 나라 사람들의 생활 모습을 조사한다."},
+{code:"[2슬03-04]",area:"나라",desc:"세계 여러 나라의 명절과 기념일을 조사하고 비교한다."},
+{code:"[2슬04-01]",area:"자연",desc:"자연물의 특성을 감각을 활용하여 탐색한다."},
+{code:"[2슬04-02]",area:"자연",desc:"계절에 따라 달라지는 자연의 변화를 관찰하고 기록한다."},
+{code:"[2슬04-03]",area:"자연",desc:"동물과 식물의 한살이를 관찰하고 기록한다."},
+{code:"[2슬04-04]",area:"자연",desc:"자연환경과 생태계를 탐구하고 소중히 여기는 태도를 기른다."}
+]},
+joyfulLife:{name:"즐거운 생활",standards:[
+{code:"[2즐01-01]",area:"나",desc:"나를 다양하게 표현하며 즐긴다."},
+{code:"[2즐01-02]",area:"나",desc:"나의 특기나 재능을 찾아 표현한다."},
+{code:"[2즐01-03]",area:"나",desc:"놀이와 활동을 통해 나를 표현한다."},
+{code:"[2즐01-04]",area:"나",desc:"가족과 함께 즐길 수 있는 활동을 하고 느낌을 나눈다."},
+{code:"[2즐02-01]",area:"마을",desc:"마을에서 볼 수 있는 다양한 것들을 관찰하고 표현한다."},
+{code:"[2즐02-02]",area:"마을",desc:"마을의 전통과 문화를 체험하고 즐긴다."},
+{code:"[2즐02-03]",area:"마을",desc:"이웃과 함께 할 수 있는 놀이를 즐긴다."},
+{code:"[2즐02-04]",area:"마을",desc:"마을의 행사에 참여하고 느낌을 표현한다."},
+{code:"[2즐03-01]",area:"나라",desc:"우리나라의 전통문화와 놀이를 체험하고 즐긴다."},
+{code:"[2즐03-02]",area:"나라",desc:"다른 나라의 놀이와 문화를 체험하고 즐긴다."},
+{code:"[2즐03-03]",area:"나라",desc:"여러 나라의 음악과 춤을 체험하며 즐긴다."},
+{code:"[2즐03-04]",area:"나라",desc:"다양한 나라의 미술과 생활 문화를 체험하고 표현한다."},
+{code:"[2즐04-01]",area:"자연",desc:"자연에서 볼 수 있는 아름다움을 찾아 표현한다."},
+{code:"[2즐04-02]",area:"자연",desc:"계절의 특징을 살려 다양하게 표현하고 즐긴다."},
+{code:"[2즐04-03]",area:"자연",desc:"자연물을 활용하여 만들기와 꾸미기를 한다."},
+{code:"[2즐04-04]",area:"자연",desc:"자연을 소재로 한 노래 부르기, 그리기, 만들기 등의 활동을 즐긴다."}
 ]}
 }},
 "3-4":{name:"3~4학년군",subjects:{
@@ -230,6 +294,62 @@ english:{name:"영어",standards:[
 {code:"[4영02-04]",area:"표현",desc:"알파벳 대소문자를 쓴다."},
 {code:"[4영02-05]",area:"표현",desc:"구두로 익힌 낱말을 따라 쓴다."},
 {code:"[4영02-06]",area:"표현",desc:"예시를 참고하여 쉽고 간단한 문장을 쓴다."}
+]},
+moral:{name:"도덕",standards:[
+{code:"[4도01-01]",area:"자신과의 관계",desc:"자신의 감정을 소중히 여기며 존중하는 태도를 바탕으로 내가 누구인가를 탐구한다."},
+{code:"[4도01-02]",area:"자신과의 관계",desc:"정직의 의미를 알고 모범적인 사례를 탐색하여 바르게 행동하려는 태도를 기른다."},
+{code:"[4도01-03]",area:"자신과의 관계",desc:"성실한 생활의 모범 사례를 탐색하고 시간 관리를 위한 생활을 계획하여 지속적인 자기 성장을 모색한다."},
+{code:"[4도01-04]",area:"자신과의 관계",desc:"다른 사람의 관점을 수용할 수 있는지를 도덕적으로 검토하고 도덕규범을 내면화하여 도덕적으로 행동할 수 있는 자세를 기른다."},
+{code:"[4도02-01]",area:"타인과의 관계",desc:"효, 우애의 의미와 필요성을 명료하게 이해하고 가족의 행복을 위해 할 수 있는 일을 탐색하여 실천 계획을 세운다."},
+{code:"[4도02-02]",area:"타인과의 관계",desc:"친구 사이의 배려에 대한 올바른 이해를 바탕으로 일상생활에서 배려에 기반한 도덕적 관계를 맺을 수 있는 방안을 탐색한다."},
+{code:"[4도02-03]",area:"타인과의 관계",desc:"공감의 태도가 필요한 이유를 이해하고 도덕적 상상력을 바탕으로 대상과 상황에 따라 감정을 나누는 방법을 탐구하여 실천한다."},
+{code:"[4도03-01]",area:"사회·공동체와의 관계",desc:"불공정의 사례를 탐구하고, 일상생활에서 공정의 가치를 추구하는 활동을 통해 실천의지를 함양한다."},
+{code:"[4도03-02]",area:"사회·공동체와의 관계",desc:"디지털 사회에서 발생하는 다양한 문제를 살펴보고, 해결 방안을 탐구하여 정보통신 윤리에 대한 민감성을 기른다."},
+{code:"[4도03-03]",area:"사회·공동체와의 관계",desc:"통일의 필요성을 이해하고, 통일 감수성을 길러 바람직한 통일의 방향을 모색한다."},
+{code:"[4도04-01]",area:"자연·초월과의 관계",desc:"생명 경시 사례를 조사하고 문제 해결 방법을 탐구함으로써 생명의 소중함을 이해한다."},
+{code:"[4도04-02]",area:"자연·초월과의 관계",desc:"인간과 자연이 함께 살아야 하는 이유를 이해하고 공생을 위한 구체적인 실천 계획을 세우며 생태 감수성을 기른다."}
+]},
+pe:{name:"체육",standards:[
+{code:"[4체01-01]",area:"운동",desc:"건강 체력의 의미를 이해하고 체력을 기르는 운동에 참여한다."},
+{code:"[4체01-02]",area:"운동",desc:"건강한 생활 습관의 중요성을 이해하고 바른 자세와 규칙적인 운동을 실천한다."},
+{code:"[4체01-03]",area:"운동",desc:"건강한 식생활의 중요성을 알고 균형 잡힌 식생활을 실천한다."},
+{code:"[4체01-04]",area:"운동",desc:"여가 활동의 의미를 이해하고 다양한 여가 활동에 참여한다."},
+{code:"[4체02-01]",area:"스포츠",desc:"동작 도전의 의미와 특성을 이해하고 다양한 동작 도전 활동에 참여한다."},
+{code:"[4체02-02]",area:"스포츠",desc:"기록 도전의 의미와 특성을 이해하고 자신의 기록을 향상시키기 위해 노력한다."},
+{code:"[4체02-03]",area:"스포츠",desc:"동작 도전과 기록 도전에서 자신의 수행을 반성하고 수행 능력을 향상시킨다."},
+{code:"[4체02-04]",area:"스포츠",desc:"도전 활동에 참여하며 인내심을 기르고 자기 성장을 위해 노력한다."},
+{code:"[4체03-01]",area:"표현",desc:"움직임 표현의 요소를 탐색하고 다양한 표현 활동에 참여한다."},
+{code:"[4체03-02]",area:"표현",desc:"리듬의 유형과 요소를 탐색하고 다양한 리듬 표현 활동에 참여한다."},
+{code:"[4체03-03]",area:"표현",desc:"움직임이나 리듬을 활용하여 개인 또는 모둠별로 작품을 구성하고 발표한다."},
+{code:"[4체03-04]",area:"표현",desc:"표현 활동에 즐겁게 참여하고 서로의 작품을 존중하며 감상한다."}
+]},
+music:{name:"음악",standards:[
+{code:"[4음01-01]",area:"연주",desc:"악곡의 특징을 이해하며 노래 부르거나 악기로 연주한다."},
+{code:"[4음01-02]",area:"연주",desc:"바른 자세와 호흡으로 노래 부르거나 악기를 연주하며 기초적인 연주 기능을 익힌다."},
+{code:"[4음01-03]",area:"연주",desc:"음악의 구성 요소를 이해하며 노래 부르거나 악기로 연주한다."},
+{code:"[4음01-04]",area:"연주",desc:"생활 속에서 음악을 활용하여 노래 부르거나 악기로 연주하며 소통한다."},
+{code:"[4음02-01]",area:"감상",desc:"악곡의 특징을 이해하며 감상한다."},
+{code:"[4음02-02]",area:"감상",desc:"상황이나 이야기 등을 표현한 음악을 듣고 느낌을 발표한다."},
+{code:"[4음02-03]",area:"감상",desc:"사회·문화적 배경에 따라 음악의 특징이 다양함을 이해한다."},
+{code:"[4음02-04]",area:"감상",desc:"생활 속에서 음악을 발견하고 공감하며 감상한다."},
+{code:"[4음03-01]",area:"창작",desc:"음악의 구성 요소를 활용하여 간단한 리듬이나 선율을 만든다."},
+{code:"[4음03-02]",area:"창작",desc:"이야기나 장면 등을 음악으로 표현한다."},
+{code:"[4음03-03]",area:"창작",desc:"사회·문화적 배경에 따라 음악을 만드는 방법이 다양함을 이해한다."},
+{code:"[4음03-04]",area:"창작",desc:"생활 속에서 음악을 활용하여 음악을 구성하며 기여한다."}
+]},
+art:{name:"미술",standards:[
+{code:"[4미01-01]",area:"미적 체험",desc:"자연과 생활에서 다양한 미적 요소를 탐색한다."},
+{code:"[4미01-02]",area:"미적 체험",desc:"대상의 특징을 다양한 감각을 활용하여 탐색한다."},
+{code:"[4미01-03]",area:"미적 체험",desc:"생활 속에서 다양하게 활용되고 있는 미술을 발견한다."},
+{code:"[4미01-04]",area:"미적 체험",desc:"미술을 자신의 생활과 관련지을 수 있다."},
+{code:"[4미02-01]",area:"표현",desc:"주제를 탐색하여 자유롭게 표현한다."},
+{code:"[4미02-02]",area:"표현",desc:"기본적인 표현 재료와 용구의 사용법을 익혀 안전하게 사용한다."},
+{code:"[4미02-03]",area:"표현",desc:"연상, 상상 등을 통해 주제를 탐색하고 다양한 방법으로 표현한다."},
+{code:"[4미02-04]",area:"표현",desc:"다양한 재료와 방법을 탐색하여 표현한다."},
+{code:"[4미03-01]",area:"감상",desc:"미술 작품의 특징을 탐색하고 느낌을 발표한다."},
+{code:"[4미03-02]",area:"감상",desc:"다양한 미술 작품을 감상하고 느낌과 생각을 나눈다."},
+{code:"[4미03-03]",area:"감상",desc:"미술 작품이 만들어진 배경에 관심을 가진다."},
+{code:"[4미03-04]",area:"감상",desc:"미술을 감상하는 바른 태도를 기른다."}
 ]}
 }},
 "5-6":{name:"5~6학년군",subjects:{
@@ -323,6 +443,75 @@ science:{name:"과학",standards:[
 ]},
 english:{name:"영어",standards:[
 {code:"[6영01-01]",area:"이해",desc:"간단한 문장이나 대화를 듣고 세부 정보를 파악한다."},{code:"[6영01-02]",area:"이해",desc:"일상생활 관련 주제에 대한 간단한 말이나 대화를 듣고 주제를 파악한다."},{code:"[6영01-03]",area:"이해",desc:"간단한 말이나 대화를 듣고 일의 순서를 파악한다."},{code:"[6영01-04]",area:"이해",desc:"간단한 문장을 읽고 의미를 파악한다."},{code:"[6영01-05]",area:"이해",desc:"간단한 글을 읽고 주요 내용을 파악한다."},{code:"[6영01-06]",area:"이해",desc:"간단한 글을 읽고 일의 순서를 파악한다."},{code:"[6영01-07]",area:"이해",desc:"간단한 글을 읽고 필자의 의도나 목적을 추측한다."},{code:"[6영01-08]",area:"이해",desc:"다양한 매체로 표현된 담화나 글을 흥미와 자신감을 가지고 듣거나 읽는다."},{code:"[6영02-01]",area:"표현",desc:"주변의 사물이나 사람에 대해 간단히 묘사한다."},{code:"[6영02-02]",area:"표현",desc:"실물, 그림, 동작 등을 보고 간단한 단어, 어구, 문장으로 말하거나 쓴다."},{code:"[6영02-03]",area:"표현",desc:"일상생활에 대해 간단한 문장으로 묻고 답한다."},{code:"[6영02-04]",area:"표현",desc:"간단한 초대, 감사, 축하 등의 글을 쓴다."},{code:"[6영02-05]",area:"표현",desc:"자신의 경험이나 계획에 대해 간단히 말하거나 쓴다."}
+]},
+moral:{name:"도덕",standards:[
+{code:"[6도01-01]",area:"자신과의 관계",desc:"내면의 소중함을 이해하고 자주적으로 행동하는 태도를 기른다."},
+{code:"[6도01-02]",area:"자신과의 관계",desc:"자주적인 삶의 의미를 탐구하고 자기 존중 및 자기 관리를 실천한다."},
+{code:"[6도01-03]",area:"자신과의 관계",desc:"도덕적 가치를 탐구하고 일상생활에서 도덕적으로 성찰하며 행동한다."},
+{code:"[6도02-01]",area:"타인과의 관계",desc:"다양한 갈등 상황에서 평화적으로 해결하는 방법을 탐구하고 실천한다."},
+{code:"[6도02-02]",area:"타인과의 관계",desc:"타인에 대한 배려와 봉사의 의미를 알고 실천 방법을 탐색한다."},
+{code:"[6도02-03]",area:"타인과의 관계",desc:"서로의 다름을 이해하고 존중하며 차별 없이 대하는 태도를 기른다."},
+{code:"[6도03-01]",area:"사회·공동체와의 관계",desc:"인권과 정의의 의미를 알고 사회 정의를 실현하기 위한 방안을 탐구한다."},
+{code:"[6도03-02]",area:"사회·공동체와의 관계",desc:"법과 규칙의 역할을 이해하고 준법의 중요성을 알며 실천한다."},
+{code:"[6도03-03]",area:"사회·공동체와의 관계",desc:"통일 한국의 미래상을 탐구하고 통일 의지를 다진다."},
+{code:"[6도04-01]",area:"자연·초월과의 관계",desc:"자연과 인간의 관계를 이해하고 환경 보전을 위한 방안을 모색하여 실천한다."},
+{code:"[6도04-02]",area:"자연·초월과의 관계",desc:"과학 기술의 발전에 따른 윤리적 문제를 탐구하고 올바른 활용 방안을 모색한다."}
+]},
+pe:{name:"체육",standards:[
+{code:"[6체01-01]",area:"운동",desc:"체력 증진의 의미를 이해하고 자신에게 적합한 체력 증진 운동을 선택하여 꾸준히 실천한다."},
+{code:"[6체01-02]",area:"운동",desc:"건강한 생활 습관과 안전한 생활 태도를 이해하고 실천한다."},
+{code:"[6체01-03]",area:"운동",desc:"운동 처방의 원리를 이해하고 자신에게 적합한 건강 관리 계획을 세워 실천한다."},
+{code:"[6체01-04]",area:"운동",desc:"여가 활동을 계획하고 지속적으로 참여하며 건강한 생활 방식을 실천한다."},
+{code:"[6체02-01]",area:"스포츠",desc:"영역형 경쟁의 의미와 특성을 이해하고 게임에 참여한다."},
+{code:"[6체02-02]",area:"스포츠",desc:"네트형 경쟁의 의미와 특성을 이해하고 게임에 참여한다."},
+{code:"[6체02-03]",area:"스포츠",desc:"필드형 경쟁의 의미와 특성을 이해하고 게임에 참여한다."},
+{code:"[6체02-04]",area:"스포츠",desc:"경쟁 활동에 참여하며 규칙을 준수하고 협동하며 공정하게 경쟁한다."},
+{code:"[6체03-01]",area:"표현",desc:"창작 표현의 요소와 창작 과정의 특징을 탐색한다."},
+{code:"[6체03-02]",area:"표현",desc:"주제에 적합한 표현 방법을 탐색하고 작품을 구성한다."},
+{code:"[6체03-03]",area:"표현",desc:"개인 또는 모둠별로 표현 작품을 창의적으로 구성하여 발표한다."},
+{code:"[6체03-04]",area:"표현",desc:"표현 활동의 가치를 이해하고 다양한 표현 활동에 적극적으로 참여한다."}
+]},
+music:{name:"음악",standards:[
+{code:"[6음01-01]",area:"연주",desc:"악곡의 특징을 이해하며 노래 부르거나 악기로 연주한다."},
+{code:"[6음01-02]",area:"연주",desc:"바른 자세와 정확한 발음, 주법으로 노래 부르거나 악기로 연주한다."},
+{code:"[6음01-03]",area:"연주",desc:"음악의 구성 요소를 이해하고 다양한 악곡을 연주한다."},
+{code:"[6음01-04]",area:"연주",desc:"생활과 문화 속에서 음악을 활용하여 연주하며 소통한다."},
+{code:"[6음02-01]",area:"감상",desc:"다양한 종류의 음악을 듣고 음악의 특징에 대해 설명한다."},
+{code:"[6음02-02]",area:"감상",desc:"다양한 문화권의 음악을 듣고 음악의 특징에 대해 비교하여 발표한다."},
+{code:"[6음02-03]",area:"감상",desc:"사회·문화적 배경에 따라 음악의 특징이 다양함을 이해하며 감상한다."},
+{code:"[6음02-04]",area:"감상",desc:"생활 속에서 음악을 발견하고 공감하며 감상한다."},
+{code:"[6음03-01]",area:"창작",desc:"음악의 구성 요소를 활용하여 간단한 음악을 만든다."},
+{code:"[6음03-02]",area:"창작",desc:"이야기, 장면, 생각 등을 음악으로 표현한다."},
+{code:"[6음03-03]",area:"창작",desc:"사회·문화적 배경에 따라 음악을 만드는 방법이 다양함을 이해한다."},
+{code:"[6음03-04]",area:"창작",desc:"생활 속에서 음악을 활용하여 음악을 구성하며 기여한다."}
+]},
+art:{name:"미술",standards:[
+{code:"[6미01-01]",area:"미적 체험",desc:"자연과 생활에서 미적 특성을 발견하고 탐색한다."},
+{code:"[6미01-02]",area:"미적 체험",desc:"대상이나 현상에서 시각적 특징을 발견하고 탐색한다."},
+{code:"[6미01-03]",area:"미적 체험",desc:"다양한 분야에서 미술이 활용되는 사례를 탐색한다."},
+{code:"[6미01-04]",area:"미적 체험",desc:"미술과 다양한 분야와의 관계를 이해하고 활용한다."},
+{code:"[6미02-01]",area:"표현",desc:"주제를 다양한 방법으로 탐색하여 자유롭게 표현한다."},
+{code:"[6미02-02]",area:"표현",desc:"다양한 발상 방법을 활용하여 아이디어를 발전시킨다."},
+{code:"[6미02-03]",area:"표현",desc:"다양한 자료를 활용하여 아이디어와 관련된 표현 내용을 구체화한다."},
+{code:"[6미02-04]",area:"표현",desc:"표현 방법과 과정에 관심을 가지고 계획을 세워 표현한다."},
+{code:"[6미03-01]",area:"감상",desc:"다양한 분야의 미술 작품과 미술가에 관심을 가진다."},
+{code:"[6미03-02]",area:"감상",desc:"작품에 대한 자신의 느낌과 생각을 발표하고 그 이유를 설명한다."},
+{code:"[6미03-03]",area:"감상",desc:"미술 작품이 만들어진 배경에 대해 탐색한다."},
+{code:"[6미03-04]",area:"감상",desc:"미술 감상 활동에 적극적으로 참여하고 서로의 느낌과 생각을 존중한다."}
+]},
+practical:{name:"실과",standards:[
+{code:"[6실01-01]",area:"인간 발달과 주도적 삶",desc:"나의 성장과 발달 과정을 이해하고 건강한 생활을 위해 실천한다."},
+{code:"[6실01-02]",area:"인간 발달과 주도적 삶",desc:"자신의 진로를 탐색하고 삶을 주도적으로 설계한다."},
+{code:"[6실01-03]",area:"인간 발달과 주도적 삶",desc:"건강한 식생활의 중요성을 알고 간단한 음식을 만들 수 있다."},
+{code:"[6실02-01]",area:"생활환경과 지속가능한 선택",desc:"생활 속 안전사고의 유형을 알고 예방 및 대처 방법을 실천한다."},
+{code:"[6실02-02]",area:"생활환경과 지속가능한 선택",desc:"자원의 소중함을 알고 지속가능한 소비 생활을 실천한다."},
+{code:"[6실02-03]",area:"생활환경과 지속가능한 선택",desc:"생활 속에서 환경을 고려한 녹색 실천을 이해하고 실천한다."},
+{code:"[6실03-01]",area:"기술적 문제해결과 혁신",desc:"기술의 의미와 특성을 이해하고 생활 속 기술 활용 사례를 탐색한다."},
+{code:"[6실03-02]",area:"기술적 문제해결과 혁신",desc:"생활 속 문제를 찾아 창의적으로 해결하는 과정을 경험한다."},
+{code:"[6실03-03]",area:"기술적 문제해결과 혁신",desc:"간단한 생활용품을 설계하고 제작한다."},
+{code:"[6실04-01]",area:"지속가능한 기술과 융합",desc:"소프트웨어의 기초 개념을 이해하고 간단한 프로그래밍을 경험한다."},
+{code:"[6실04-02]",area:"지속가능한 기술과 융합",desc:"로봇의 기능과 구조를 이해하고 간단한 로봇을 제작한다."},
+{code:"[6실04-03]",area:"지속가능한 기술과 융합",desc:"지속가능한 미래 사회를 위한 기술의 역할을 탐구한다."}
 ]}
 }}
 }},
@@ -519,13 +708,90 @@ info:{name:"정보",standards:[
 {code:"[9정03-05]",area:"알고리즘과 프로그래밍",desc:"제어 구조를 활용하여 순차, 선택, 반복이 포함된 프로그램을 작성한다."},
 {code:"[9정04-01]",area:"디지털 문화",desc:"디지털 사회의 특성을 이해하고, 디지털 역량을 함양한다."},
 {code:"[9정04-02]",area:"디지털 문화",desc:"인공지능의 개념과 특성을 이해하고, 인공지능 기술의 사회적 영향을 탐구한다."}
+]},
+history:{name:"역사",standards:[
+{code:"[9역01-01]",area:"문명의 발생과 고대 세계",desc:"인류의 출현과 선사 문화의 전개 과정을 이해한다."},
+{code:"[9역01-02]",area:"문명의 발생과 고대 세계",desc:"세계 주요 문명의 발생과 특징을 비교하여 이해한다."},
+{code:"[9역01-03]",area:"문명의 발생과 고대 세계",desc:"고대 제국의 성장과 동서 교류를 탐구한다."},
+{code:"[9역01-04]",area:"문명의 발생과 고대 세계",desc:"고대 사회의 종교와 사상의 특징을 파악한다."},
+{code:"[9역02-01]",area:"세계 종교의 확산과 지역 문화",desc:"세계 종교의 확산과 그 영향을 탐구한다."},
+{code:"[9역02-02]",area:"세계 종교의 확산과 지역 문화",desc:"동아시아 문화권의 형성과 특징을 이해한다."},
+{code:"[9역02-03]",area:"세계 종교의 확산과 지역 문화",desc:"이슬람 문화권의 형성과 확산 과정을 탐구한다."},
+{code:"[9역02-04]",area:"세계 종교의 확산과 지역 문화",desc:"유럽 중세 사회의 특징을 이해하고 변화 과정을 탐구한다."},
+{code:"[9역03-01]",area:"지역 세계의 교류와 변화",desc:"몽골 제국의 성장과 동서 교류의 확대를 탐구한다."},
+{code:"[9역03-02]",area:"지역 세계의 교류와 변화",desc:"신항로 개척과 유럽의 팽창이 가져온 변화를 이해한다."},
+{code:"[9역03-03]",area:"지역 세계의 교류와 변화",desc:"동아시아 전통 사회의 발전과 변화를 탐구한다."},
+{code:"[9역03-04]",area:"지역 세계의 교류와 변화",desc:"서아시아와 인도의 이슬람 제국의 발전 과정을 이해한다."},
+{code:"[9역04-01]",area:"제국주의와 근대 국민 국가",desc:"시민 혁명과 산업 혁명의 전개와 영향을 이해한다."},
+{code:"[9역04-02]",area:"제국주의와 근대 국민 국가",desc:"제국주의의 확산과 식민지 지배의 영향을 탐구한다."},
+{code:"[9역04-03]",area:"제국주의와 근대 국민 국가",desc:"두 차례의 세계 대전의 원인과 결과를 이해한다."},
+{code:"[9역04-04]",area:"제국주의와 근대 국민 국가",desc:"냉전 체제와 현대 세계의 변화를 탐구한다."}
+]},
+pe:{name:"체육",standards:[
+{code:"[9체01-01]",area:"운동",desc:"체력의 개념과 체력 증진의 원리를 이해하고 자신의 체력을 진단하여 체력 증진 계획을 수립한다."},
+{code:"[9체01-02]",area:"운동",desc:"체력 증진을 위한 다양한 운동 방법을 탐색하고 꾸준히 실천한다."},
+{code:"[9체01-03]",area:"운동",desc:"건강과 체력 관리를 위해 자기 관리 능력을 기른다."},
+{code:"[9체01-04]",area:"운동",desc:"신체적·정신적·사회적 건강의 의미를 이해하고 건강한 생활을 실천한다."},
+{code:"[9체01-05]",area:"운동",desc:"운동 처방의 원리를 이해하고 자신에게 적합한 운동을 계획하여 실천한다."},
+{code:"[9체02-01]",area:"스포츠",desc:"동작 스포츠의 의미와 특성을 이해하고 참여한다."},
+{code:"[9체02-02]",area:"스포츠",desc:"기록 스포츠의 의미와 특성을 이해하고 참여한다."},
+{code:"[9체02-03]",area:"스포츠",desc:"영역형 스포츠의 의미와 특성을 이해하고 게임에 참여한다."},
+{code:"[9체02-04]",area:"스포츠",desc:"네트형 스포츠의 의미와 특성을 이해하고 게임에 참여한다."},
+{code:"[9체02-05]",area:"스포츠",desc:"필드형 스포츠의 의미와 특성을 이해하고 게임에 참여한다."},
+{code:"[9체02-06]",area:"스포츠",desc:"스포츠 활동에서 규칙을 준수하고 협동하며 공정하게 경쟁한다."},
+{code:"[9체03-01]",area:"표현",desc:"스포츠 표현의 의미와 특성을 이해하고 참여한다."},
+{code:"[9체03-02]",area:"표현",desc:"전통 표현의 의미와 특성을 이해하고 참여한다."},
+{code:"[9체03-03]",area:"표현",desc:"현대 표현의 의미와 특성을 이해하고 참여한다."},
+{code:"[9체03-04]",area:"표현",desc:"표현 활동에서 창의적으로 작품을 구성하고 발표하며 감상한다."}
+]},
+music:{name:"음악",standards:[
+{code:"[9음01-01]",area:"연주",desc:"악곡의 특징을 이해하며 개성 있게 노래 부르거나 악기로 연주한다."},
+{code:"[9음01-02]",area:"연주",desc:"악곡에 어울리는 신체 표현을 하며 노래 부르거나 악기로 연주한다."},
+{code:"[9음01-03]",area:"연주",desc:"음악의 구성 요소를 이해하며 다양한 악곡을 연주한다."},
+{code:"[9음01-04]",area:"연주",desc:"세계 속 음악 문화를 이해하며 연주하고 소통한다."},
+{code:"[9음02-01]",area:"감상",desc:"다양한 종류의 음악을 듣고 음악의 특징을 구별하여 설명한다."},
+{code:"[9음02-02]",area:"감상",desc:"다양한 문화권의 음악을 듣고 음악의 특징을 비교하여 설명한다."},
+{code:"[9음02-03]",area:"감상",desc:"사회·문화적 배경 속에서 음악의 의미를 이해하며 감상한다."},
+{code:"[9음02-04]",area:"감상",desc:"세계 속 음악을 발견하고 공감하며 감상한다."},
+{code:"[9음03-01]",area:"창작",desc:"음악의 구성 요소를 활용하여 주제에 맞는 음악을 만든다."},
+{code:"[9음03-02]",area:"창작",desc:"다양한 매체를 활용하여 음악을 만든다."},
+{code:"[9음03-03]",area:"창작",desc:"사회·문화적 배경에 따라 음악 창작의 방법이 다양함을 이해한다."},
+{code:"[9음03-04]",area:"창작",desc:"세계 속 음악 문화를 활용하여 음악을 구성하며 기여한다."}
+]},
+art:{name:"미술",standards:[
+{code:"[9미01-01]",area:"미적 체험",desc:"자신과 주변 환경에서 미적 가치를 발견하고 탐색한다."},
+{code:"[9미01-02]",area:"미적 체험",desc:"시각 문화 속에서 미술의 다양한 역할을 이해한다."},
+{code:"[9미01-03]",area:"미적 체험",desc:"미술과 다양한 분야의 융합 사례를 탐색한다."},
+{code:"[9미01-04]",area:"미적 체험",desc:"미술을 통해 자신과 사회, 환경과의 관계를 탐색한다."},
+{code:"[9미02-01]",area:"표현",desc:"주제의 특징과 의도를 효과적으로 표현한다."},
+{code:"[9미02-02]",area:"표현",desc:"다양한 발상 방법을 활용하여 창의적으로 주제를 표현한다."},
+{code:"[9미02-03]",area:"표현",desc:"표현 매체의 특성을 이해하고 다양한 표현 방법을 탐색하여 활용한다."},
+{code:"[9미02-04]",area:"표현",desc:"표현 과정을 체계적으로 계획하고 점검하여 표현한다."},
+{code:"[9미03-01]",area:"감상",desc:"미술 작품의 특징을 분석하고 해석한다."},
+{code:"[9미03-02]",area:"감상",desc:"미술 작품의 사회·문화적 배경을 이해하고 비평한다."},
+{code:"[9미03-03]",area:"감상",desc:"미술의 변천 과정과 가치를 이해한다."},
+{code:"[9미03-04]",area:"감상",desc:"미술을 생활 속에서 활용하고 미술 문화 활동에 참여한다."}
+]},
+techHome:{name:"기술·가정",standards:[
+{code:"[9기가01-01]",area:"인간 발달과 주도적 삶",desc:"청소년기 발달의 특징을 이해하고 자아정체감을 형성하여 주도적인 삶을 설계한다."},
+{code:"[9기가01-02]",area:"인간 발달과 주도적 삶",desc:"건강한 가정생활을 위해 가족 관계의 중요성을 이해하고 가족 간 의사소통 방법을 실천한다."},
+{code:"[9기가01-03]",area:"인간 발달과 주도적 삶",desc:"균형 잡힌 식생활의 중요성을 이해하고 건강한 식단을 계획하여 실천한다."},
+{code:"[9기가02-01]",area:"생활환경과 지속가능한 선택",desc:"주거 환경의 중요성을 이해하고 쾌적한 주거 환경을 조성하는 방안을 탐색한다."},
+{code:"[9기가02-02]",area:"생활환경과 지속가능한 선택",desc:"옷의 기능과 관리 방법을 이해하고 지속가능한 의생활을 실천한다."},
+{code:"[9기가02-03]",area:"생활환경과 지속가능한 선택",desc:"합리적인 소비 생활을 위한 의사결정 능력을 기른다."},
+{code:"[9기가03-01]",area:"기술적 문제해결과 혁신",desc:"기술의 발달 과정을 이해하고 기술이 사회에 미치는 영향을 탐구한다."},
+{code:"[9기가03-02]",area:"기술적 문제해결과 혁신",desc:"기술적 문제를 창의적으로 해결하는 과정을 경험한다."},
+{code:"[9기가03-03]",area:"기술적 문제해결과 혁신",desc:"제조 기술의 원리를 이해하고 제품을 설계·제작한다."},
+{code:"[9기가03-04]",area:"기술적 문제해결과 혁신",desc:"건설 기술의 원리를 이해하고 구조물을 설계·제작한다."},
+{code:"[9기가04-01]",area:"지속가능한 기술과 융합",desc:"수송 기술의 원리를 이해하고 지속가능한 수송 수단을 탐색한다."},
+{code:"[9기가04-02]",area:"지속가능한 기술과 융합",desc:"생명 기술의 원리를 이해하고 미래 사회에 미치는 영향을 탐구한다."},
+{code:"[9기가04-03]",area:"지속가능한 기술과 융합",desc:"적정 기술의 의미를 이해하고 지속가능한 발전을 위한 기술의 역할을 탐구한다."}
 ]}
 }}}
 };
 
 const schoolSelect = document.getElementById('schoolLevel');
 const gradeSelect = document.getElementById('gradeGroup');
-const subjectSelect = document.getElementById('subject');
 const resultSection = document.getElementById('resultSection');
 const tableBody = document.getElementById('resultBody');
 const resultTitle = document.getElementById('resultTitle');
@@ -533,6 +799,11 @@ const standardCount = document.getElementById('resultCount');
 
 const SCHOOL_LABELS = {elementary:'초등학교',middle:'중학교'};
 const GRADE_LABELS = {"1-2":"1~2학년군","3-4":"3~4학년군","5-6":"5~6학년군","1-3":"1~3학년군"};
+
+function getSubjects(s,g){
+  const gg=CURRICULUM_DATA[s].gradeGroups[g];
+  return gg.subjects||gg;
+}
 
 function populateSchool(){
   schoolSelect.innerHTML='<option value="">학교급 선택</option>';
@@ -543,8 +814,7 @@ function populateSchool(){
 
 function populateGrade(){
   gradeSelect.innerHTML='<option value="">학년군 선택</option>';
-  subjectSelect.innerHTML='<option value="">과목 선택</option>';
-  subjectSelect.disabled=true;
+  resetSubjects();
   resultSection.classList.add('hidden');
   const s=schoolSelect.value;if(!s){gradeSelect.disabled=true;return;}
   gradeSelect.disabled=false;
@@ -554,56 +824,113 @@ function populateGrade(){
   });
 }
 
-function getSubjects(s,g){
-  const gg=CURRICULUM_DATA[s].gradeGroups[g];
-  return gg.subjects||gg;
+function resetSubjects(){
+  document.getElementById('subjectChecks').innerHTML='';
+  document.getElementById('checkAll').checked=false;
+  document.getElementById('subjectBtnText').textContent='과목 선택';
+  document.getElementById('subjectBtnText').className='text-gray-400';
+  document.getElementById('subjectBtn').disabled=true;
+  document.getElementById('subjectPanel').classList.add('hidden');
 }
+
 function populateSubject(){
-  subjectSelect.innerHTML='<option value="">과목 선택</option>';
+  resetSubjects();
   resultSection.classList.add('hidden');
-  const s=schoolSelect.value,g=gradeSelect.value;if(!s||!g){subjectSelect.disabled=true;return;}
-  subjectSelect.disabled=false;
+  const s=schoolSelect.value,g=gradeSelect.value;
+  if(!s||!g)return;
+  document.getElementById('subjectBtn').disabled=false;
   const subs=getSubjects(s,g);
+  const checks=document.getElementById('subjectChecks');
   Object.keys(subs).forEach(k=>{
     if(k==='name')return;
-    const o=document.createElement('option');o.value=k;o.textContent=subs[k].name;subjectSelect.appendChild(o);
+    const label=document.createElement('label');
+    label.className='flex items-center px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm';
+    label.innerHTML='<input type="checkbox" value="'+k+'" onchange="onSubjectChange()" class="subject-check w-4 h-4 text-blue-600 rounded"><span class="ml-2">'+subs[k].name+'</span>';
+    checks.appendChild(label);
   });
 }
 
+function toggleSubjects(){
+  document.getElementById('subjectPanel').classList.toggle('hidden');
+}
+
+function toggleAllSubjects(el){
+  document.querySelectorAll('.subject-check').forEach(cb=>{cb.checked=el.checked;});
+  onSubjectChange();
+}
+
+function getSelectedSubjects(){
+  return Array.from(document.querySelectorAll('.subject-check:checked')).map(cb=>cb.value);
+}
+
+function onSubjectChange(){
+  const selected=getSelectedSubjects();
+  const total=document.querySelectorAll('.subject-check').length;
+  const btn=document.getElementById('subjectBtnText');
+  const s=schoolSelect.value,g=gradeSelect.value;
+  if(!s||!g)return;
+  const subs=getSubjects(s,g);
+  document.getElementById('checkAll').checked=selected.length===total&&total>0;
+  if(selected.length===0){
+    btn.textContent='과목 선택';btn.className='text-gray-400';
+    resultSection.classList.add('hidden');
+  }else{
+    const names=selected.map(k=>subs[k].name);
+    btn.textContent=names.length<=2?names.join(', '):names.length+'과목 선택됨';
+    btn.className='text-gray-800';
+    showStandards();
+  }
+}
+
 function showStandards(){
-  resultSection.classList.add('hidden');
-  const s=schoolSelect.value,g=gradeSelect.value,sub=subjectSelect.value;
-  if(!s||!g||!sub)return;
-  const data=getSubjects(s,g)[sub];
-  resultTitle.textContent=`${SCHOOL_LABELS[s]} ${GRADE_LABELS[g]||g} ${data.name} 성취기준`;
-  standardCount.textContent=`총 ${data.standards.length}개`;
+  const s=schoolSelect.value,g=gradeSelect.value;
+  const selected=getSelectedSubjects();
+  if(!s||!g||selected.length===0){resultSection.classList.add('hidden');return;}
+  const subs=getSubjects(s,g);
+  let all=[];
+  selected.forEach(k=>{
+    const data=subs[k];
+    data.standards.forEach(st=>{all.push({...st,subject:data.name});});
+  });
+  const names=selected.map(k=>subs[k].name);
+  resultTitle.textContent=SCHOOL_LABELS[s]+' '+GRADE_LABELS[g]+' '+(names.length<=3?names.join(', '):names.length+'과목')+' 성취기준';
+  standardCount.textContent='총 '+all.length+'개';
   tableBody.innerHTML='';
-  data.standards.forEach((st,i)=>{
+  all.forEach((st,i)=>{
     const tr=document.createElement('tr');
     tr.className=i%2===0?'bg-white':'bg-gray-50';
-    tr.innerHTML=`<td class="px-4 py-3 text-sm text-gray-500 text-center">${i+1}</td><td class="px-4 py-3 text-sm font-mono text-blue-700 whitespace-nowrap">${st.code}</td><td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">${st.area}</td><td class="px-4 py-3 text-sm text-gray-800">${st.desc}</td>`;
+    tr.innerHTML='<td class="px-4 py-3 text-sm text-gray-500 text-center">'+(i+1)+'</td><td class="px-4 py-3 text-sm font-mono text-blue-700 whitespace-nowrap">'+st.code+'</td><td class="px-4 py-3 text-sm text-blue-600 whitespace-nowrap">'+st.subject+'</td><td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">'+st.area+'</td><td class="px-4 py-3 text-sm text-gray-800">'+st.desc+'</td>';
     tableBody.appendChild(tr);
   });
   resultSection.classList.remove('hidden');
 }
 
 function downloadExcel(){
-  const s=schoolSelect.value,g=gradeSelect.value,sub=subjectSelect.value;
-  if(!s||!g||!sub)return;
-  const data=getSubjects(s,g)[sub];
-  const rows=[['성취기준 코드','영역','성취기준']];
-  data.standards.forEach(st=>{rows.push([st.code,st.area,st.desc]);});
+  const s=schoolSelect.value,g=gradeSelect.value;
+  const selected=getSelectedSubjects();
+  if(!s||!g||selected.length===0)return;
+  const subs=getSubjects(s,g);
+  const rows=[['과목','성취기준 코드','영역','성취기준']];
+  selected.forEach(k=>{
+    const data=subs[k];
+    data.standards.forEach(st=>{rows.push([data.name,st.code,st.area,st.desc]);});
+  });
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:15},{wch:15},{wch:80}];
+  ws['!cols']=[{wch:10},{wch:15},{wch:20},{wch:80}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'성취기준');
-  const fname=`${SCHOOL_LABELS[s]}_${GRADE_LABELS[g]}_${data.name}_성취기준.xlsx`;
-  XLSX.writeFile(wb,fname);
+  const names=selected.map(k=>subs[k].name);
+  const subLabel=names.length<=3?names.join('_'):names.length+'과목';
+  XLSX.writeFile(wb,SCHOOL_LABELS[s]+'_'+GRADE_LABELS[g]+'_'+subLabel+'_성취기준.xlsx');
 }
+
+document.addEventListener('click',function(e){
+  const c=document.getElementById('subjectContainer');
+  if(c&&!c.contains(e.target))document.getElementById('subjectPanel').classList.add('hidden');
+});
 
 schoolSelect.addEventListener('change',()=>{populateGrade();});
 gradeSelect.addEventListener('change',()=>{populateSubject();});
-subjectSelect.addEventListener('change',()=>{showStandards();});
 
 populateSchool();
 </script>
